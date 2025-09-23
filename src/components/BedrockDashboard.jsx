@@ -16,6 +16,7 @@ import {
   StatusIndicator
 } from '@cloudscape-design/components';
 import { generateBedrockLog, generateSecurityEvent, generateChatMessage, extractChatFromBedrockLog, extractMetricsFromLogs } from '../utils/mockDataGenerator';
+import BedrockLogStats from './BedrockLogStats';
 
 const BedrockDashboard = () => {
   const [logs, setLogs] = useState([]);
@@ -110,11 +111,15 @@ const BedrockDashboard = () => {
               </div>
               <div>
                 <Box variant="awsui-key-label">LLM Family</Box>
-                <div>Claude 3.5 Sonnet</div>
+                <div>{latestLog?.modelId?.includes('claude') ? 'Claude' : 
+                      latestLog?.modelId?.includes('nova') ? 'Nova' : 
+                      latestLog?.modelId?.includes('llama') ? 'Llama' : 'Mixed Models'}</div>
               </div>
               <div>
                 <Box variant="awsui-key-label">Model ID</Box>
-                <div>anthropic.claude-3-5-sonnet-20241022-v2:0</div>
+                <div style={{ fontSize: '0.8em', wordBreak: 'break-all' }}>
+                  {latestLog?.modelId?.split('/').pop() || 'Multiple Models'}
+                </div>
               </div>
               <div>
                 <Box variant="awsui-key-label">Guardrail Name</Box>
@@ -126,7 +131,26 @@ const BedrockDashboard = () => {
               </div>
               <div>
                 <Box variant="awsui-key-label">Live Tokens</Box>
-                <div>{totalTokens.toLocaleString()}</div>
+                <div>{metrics?.totalTokens?.toLocaleString() || '0'}</div>
+              </div>
+              <div>
+                <Box variant="awsui-key-label">Avg Latency</Box>
+                <div>{metrics?.avgLatency || 0}ms</div>
+              </div>
+              <div>
+                <Box variant="awsui-key-label">Active Models</Box>
+                <div>{metrics?.uniqueModels || 0}</div>
+              </div>
+              <div>
+                <Box variant="awsui-key-label">Region</Box>
+                <div>{latestLog?.region || 'Multi-region'}</div>
+              </div>
+              <div>
+                <Box variant="awsui-key-label">Inference Config</Box>
+                <div>
+                  Temp: {latestLog?.input?.inputBodyJson?.inferenceConfig?.temperature || 'N/A'} | 
+                  TopP: {latestLog?.input?.inputBodyJson?.inferenceConfig?.topP || 'N/A'}
+                </div>
               </div>
             </ColumnLayout>
           </Container>
@@ -196,6 +220,9 @@ const BedrockDashboard = () => {
               </Box>
             </Container>
           </Grid>
+
+          {/* Bedrock Statistics */}
+          <BedrockLogStats logs={logs} />
 
           {/* Bottom Grid */}
           <Grid

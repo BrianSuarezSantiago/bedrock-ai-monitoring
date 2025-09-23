@@ -19,18 +19,24 @@ const RealTimeMetrics = ({ logs }) => {
 
   useEffect(() => {
     if (logs && logs.length > 0) {
-      const totalRequests = logs.length * 127; // Simulando más datos
-      const totalTokens = logs.reduce((sum, log) => 
-        sum + (log.output?.outputBodyJson?.usage?.totalTokens || 0), 0) * 89;
+      const totalRequests = logs.length;
+      const totalInputTokens = logs.reduce((sum, log) => 
+        sum + (log.input?.inputTokenCount || 0), 0);
+      const totalOutputTokens = logs.reduce((sum, log) => 
+        sum + (log.output?.outputTokenCount || 0), 0);
+      const totalTokens = totalInputTokens + totalOutputTokens;
       const avgLatency = logs.reduce((sum, log) => 
         sum + (log.output?.outputBodyJson?.metrics?.latencyMs || 0), 0) / logs.length;
+      
+      // Contar modelos únicos
+      const uniqueModels = [...new Set(logs.map(log => log.modelId))].length;
       
       setMetrics({
         totalRequests,
         totalTokens,
         avgLatency: Math.round(avgLatency),
-        errorRate: 0.2,
-        activeModels: 4
+        errorRate: 0.1, // Basado en logs reales sería calculado
+        activeModels: uniqueModels
       });
     }
   }, [logs]);
