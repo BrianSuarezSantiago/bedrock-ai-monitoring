@@ -1,0 +1,67 @@
+/* Dashboard personalizado para Bedrock Monitoring */
+.dashboard-container {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+}
+
+.metric-card {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease-in-out;
+}
+
+.metric-card:hover {
+  transform: translateY(-2px);
+}
+
+.status-indicator-success {
+  color: #16a34a;
+}
+
+.status-indicator-warning {
+  color: #ea580c;
+}
+
+.status-indicator-error {
+  color: #dc2626;
+}
+
+.chat-message-user {
+  background: #e0f2fe;
+  border-left: 4px solid #0288d1;
+}
+
+.chat-message-assistant {
+  background: #f3e5f5;
+  border-left: 4px solid #7b1fa2;
+}
+
+.real-time-indicator {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.threat-level-low {
+  color: #16a34a;
+}
+
+.threat-level-medium {
+  color: #ea580c;
+}
+
+.threat-level-high {
+  color: #dc2626;
+}
