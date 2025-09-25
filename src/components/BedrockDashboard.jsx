@@ -29,10 +29,10 @@ const BedrockDashboard = () => {
     // Generar datos iniciales
     const initialLogs = Array.from({ length: 15 }, () => generateBedrockLog());
     const initialEvents = Array.from({ length: 3 }, () => generateSecurityEvent());
-    
+
     // Extraer mensajes de chat de los logs
     const initialChat = initialLogs.flatMap(log => extractChatFromBedrockLog(log));
-    
+
     setLogs(initialLogs);
     setSecurityEvents(initialEvents);
     setChatMessages(initialChat);
@@ -43,14 +43,14 @@ const BedrockDashboard = () => {
       if (Math.random() > 0.2) {
         const newLog = generateBedrockLog();
         setLogs(prev => [newLog, ...prev.slice(0, 99)]);
-        
+
         // Extraer chat del nuevo log
         const newChatMessages = extractChatFromBedrockLog(newLog);
         if (newChatMessages.length > 0) {
           setChatMessages(prev => [...newChatMessages, ...prev.slice(0, 49)]);
         }
       }
-      
+
       // Agregar evento de seguridad ocasionalmente (más realista - menos frecuente)
       if (Math.random() > 0.95) {
         setSecurityEvents(prev => [generateSecurityEvent(), ...prev.slice(0, 29)]);
@@ -83,225 +83,227 @@ const BedrockDashboard = () => {
   ];
 
   return (
-    <AppLayout
-      navigationHide
-      toolsHide
-      content={
-        <SpaceBetween size="l">
-          {/* Header */}
-          <Container>
-            <Header 
-              variant="h1"
-              actions={
-                <StatusIndicator type="success">
-                  Live • {logs.length} requests monitored
-                </StatusIndicator>
-              }
-            >
-              Real-Time GenAI Security Monitoring
-            </Header>
-          </Container>
-
-          {/* Model Information */}
-          <Container header={<Header variant="h2">Model Information</Header>}>
-            <ColumnLayout columns={4} variant="text-grid">
-              <div>
-                <Box variant="awsui-key-label">Application Type</Box>
-                <div>Chatbot</div>
-              </div>
-              <div>
-                <Box variant="awsui-key-label">LLM Family</Box>
-                <div>{latestLog?.modelId?.includes('claude') ? 'Claude' : 
-                      latestLog?.modelId?.includes('nova') ? 'Nova' : 
-                      latestLog?.modelId?.includes('llama') ? 'Llama' : 'Mixed Models'}</div>
-              </div>
-              <div>
-                <Box variant="awsui-key-label">Model ID</Box>
-                <div style={{ fontSize: '0.8em', wordBreak: 'break-all' }}>
-                  {latestLog?.modelId?.split('/').pop() || 'Multiple Models'}
-                </div>
-              </div>
-              <div>
-                <Box variant="awsui-key-label">Guardrail Name</Box>
-                <div>genai-dashboard</div>
-              </div>
-              <div>
-                <Box variant="awsui-key-label">Guardrails</Box>
-                <div>ON</div>
-              </div>
-              <div>
-                <Box variant="awsui-key-label">Live Tokens</Box>
-                <div>{metrics?.totalTokens?.toLocaleString() || '0'}</div>
-              </div>
-              <div>
-                <Box variant="awsui-key-label">Avg Latency</Box>
-                <div>{metrics?.avgLatency || 0}ms</div>
-              </div>
-              <div>
-                <Box variant="awsui-key-label">Active Models</Box>
-                <div>{metrics?.uniqueModels || 0}</div>
-              </div>
-              <div>
-                <Box variant="awsui-key-label">Region</Box>
-                <div>{latestLog?.region || 'Multi-region'}</div>
-              </div>
-              <div>
-                <Box variant="awsui-key-label">Inference Config</Box>
-                <div>
-                  Temp: {latestLog?.input?.inputBodyJson?.inferenceConfig?.temperature || 'N/A'} | 
-                  TopP: {latestLog?.input?.inputBodyJson?.inferenceConfig?.topP || 'N/A'}
-                </div>
-              </div>
-            </ColumnLayout>
-          </Container>
-
-          {/* Metrics Grid */}
-          <Grid
-            gridDefinition={[
-              { colspan: { default: 12, s: 6, m: 4 } },
-              { colspan: { default: 12, s: 6, m: 4 } },
-              { colspan: { default: 12, s: 6, m: 4 } }
-            ]}
-          >
-            {/* Overall Threat Level */}
-            <Container header={<Header variant="h2">Overall Threat Level</Header>}>
-              <Box textAlign="center">
-                <PieChart
-                  data={threatLevelData}
-                  size="medium"
-                  hideFilter
-                  hideLegend
-                  innerMetricDescription="Threat Level"
-                  innerMetricValue="Low"
-                />
-                <Box margin={{ top: "s" }} fontSize="body-s" color="text-status-info">
-                  All clear. Your application is secure.
-                </Box>
-              </Box>
-            </Container>
-
-            {/* Security Stats */}
-            <Container header={<Header variant="h2">Security Stats</Header>}>
-              <Box textAlign="center">
-                <PieChart
-                  data={securityStatsData}
-                  size="medium"
-                  hideFilter
-                  hideLegend
-                  innerMetricDescription="Total"
-                  innerMetricValue="7"
-                />
-                <Box margin={{ top: "s" }}>
-                  <ColumnLayout columns={2} variant="text-grid">
-                    <div>
-                      <Box variant="awsui-key-label">Prompt Injection: 0.0%</Box>
-                      <Box variant="awsui-key-label">Jailbreak Attempts: 0.0%</Box>
-                    </div>
-                    <div>
-                      <Box variant="awsui-key-label">Malware: 0.0%</Box>
-                      <Box variant="awsui-key-label">Network Anomaly: 0.0%</Box>
-                    </div>
-                  </ColumnLayout>
-                </Box>
-              </Box>
-            </Container>
-
-            {/* Guardrail Categories */}
-            <Container header={<Header variant="h2">Guardrail Categories</Header>}>
-              <Box textAlign="center">
-                <PieChart
-                  data={guardrailCategoriesData}
-                  size="medium"
-                  hideFilter
-                  hideLegend
-                  innerMetricDescription="Total"
-                  innerMetricValue="8"
-                />
-              </Box>
-            </Container>
-          </Grid>
-
-          {/* Bedrock Statistics */}
-          <BedrockLogStats logs={logs} />
-
-          {/* Bottom Grid */}
-          <Grid
-            gridDefinition={[
-              { colspan: { default: 12, m: 6 } },
-              { colspan: { default: 12, m: 6 } }
-            ]}
-          >
-            {/* Recent Chat */}
-            <Container header={<Header variant="h2">Recent Chat</Header>}>
-              <SpaceBetween size="s">
-                {chatMessages.slice(0, 6).map((message, index) => (
-                  <Box 
-                    key={message.id || index} 
-                    padding="s" 
-                    backgroundColor={message.role === 'user' ? 'background-container-content' : 'background-container-header'}
-                  >
-                    <Box fontSize="body-s" color="text-label">
-                      {message.role === 'user' ? 'User: ' : 'Assistant: '}{message.content}
-                    </Box>
-                    <Box fontSize="body-s" color="text-status-inactive">
-                      {new Date(message.timestamp).toLocaleTimeString()}
-                    </Box>
-                  </Box>
-                ))}
-                {chatMessages.length === 0 && (
-                  <Box textAlign="center" color="text-status-inactive">
-                    No recent chat messages
-                  </Box>
-                )}
-              </SpaceBetween>
-            </Container>
-
-            {/* Security Events */}
-            <Container header={<Header variant="h2">Security Events</Header>}>
-              <Table
-                columnDefinitions={[
-                  {
-                    id: "threatType",
-                    header: "Threat Type",
-                    cell: item => item.threatType
-                  },
-                  {
-                    id: "detail",
-                    header: "Detail",
-                    cell: item => item.detail
-                  },
-                  {
-                    id: "priority",
-                    header: "Priority",
-                    cell: item => item.priority
-                  },
-                  {
-                    id: "username",
-                    header: "Username",
-                    cell: item => item.username
-                  },
-                  {
-                    id: "risk",
-                    header: "Risk",
-                    cell: item => <Badge color={item.risk === 'Low' ? 'green' : 'red'}>{item.risk}</Badge>
-                  }
-                ]}
-                items={securityEvents.slice(0, 10)}
-                variant="embedded"
-                empty={
-                  <Box textAlign="center" color="inherit">
-                    <b>No security events</b>
-                    <Box padding={{ bottom: "s" }} variant="p" color="inherit">
-                      No security events to display.
-                    </Box>
-                  </Box>
+    <div style={{ width: '100vw', height: '100vh', margin: 0, padding: 0 }}>
+      <AppLayout
+        navigationHide
+        toolsHide
+        content={
+          <SpaceBetween size="l">
+            {/* Header */}
+            <Container>
+              <Header
+                variant="h1"
+                actions={
+                  <StatusIndicator type="success">
+                    Live • {logs.length} requests monitored
+                  </StatusIndicator>
                 }
-              />
+              >
+                Real-Time GenAI Security Monitoring
+              </Header>
             </Container>
-          </Grid>
-        </SpaceBetween>
-      }
-    />
+
+            {/* Model Information */}
+            <Container header={<Header variant="h2">Model Information</Header>}>
+              <ColumnLayout columns={4} variant="text-grid">
+                <div>
+                  <Box variant="awsui-key-label">Application Type</Box>
+                  <div>Chatbot</div>
+                </div>
+                <div>
+                  <Box variant="awsui-key-label">LLM Family</Box>
+                  <div>{latestLog?.modelId?.includes('claude') ? 'Claude' :
+                    latestLog?.modelId?.includes('nova') ? 'Nova' :
+                      latestLog?.modelId?.includes('llama') ? 'Llama' : 'Mixed Models'}</div>
+                </div>
+                <div>
+                  <Box variant="awsui-key-label">Model ID</Box>
+                  <div style={{ fontSize: '0.8em', wordBreak: 'break-all' }}>
+                    {latestLog?.modelId?.split('/').pop() || 'Multiple Models'}
+                  </div>
+                </div>
+                <div>
+                  <Box variant="awsui-key-label">Guardrail Name</Box>
+                  <div>genai-dashboard</div>
+                </div>
+                <div>
+                  <Box variant="awsui-key-label">Guardrails</Box>
+                  <div>ON</div>
+                </div>
+                <div>
+                  <Box variant="awsui-key-label">Live Tokens</Box>
+                  <div>{metrics?.totalTokens?.toLocaleString() || '0'}</div>
+                </div>
+                <div>
+                  <Box variant="awsui-key-label">Avg Latency</Box>
+                  <div>{metrics?.avgLatency || 0}ms</div>
+                </div>
+                <div>
+                  <Box variant="awsui-key-label">Active Models</Box>
+                  <div>{metrics?.uniqueModels || 0}</div>
+                </div>
+                <div>
+                  <Box variant="awsui-key-label">Region</Box>
+                  <div>{latestLog?.region || 'Multi-region'}</div>
+                </div>
+                <div>
+                  <Box variant="awsui-key-label">Inference Config</Box>
+                  <div>
+                    Temp: {latestLog?.input?.inputBodyJson?.inferenceConfig?.temperature || 'N/A'} |
+                    TopP: {latestLog?.input?.inputBodyJson?.inferenceConfig?.topP || 'N/A'}
+                  </div>
+                </div>
+              </ColumnLayout>
+            </Container>
+
+            {/* Metrics Grid */}
+            <Grid
+              gridDefinition={[
+                { colspan: { default: 12, s: 6, m: 4 } },
+                { colspan: { default: 12, s: 6, m: 4 } },
+                { colspan: { default: 12, s: 6, m: 4 } }
+              ]}
+            >
+              {/* Overall Threat Level */}
+              <Container header={<Header variant="h2">Overall Threat Level</Header>}>
+                <Box textAlign="center">
+                  <PieChart
+                    data={threatLevelData}
+                    size="medium"
+                    hideFilter
+                    hideLegend
+                    innerMetricDescription="Threat Level"
+                    innerMetricValue="Low"
+                  />
+                  <Box margin={{ top: "s" }} fontSize="body-s" color="text-status-info">
+                    All clear. Your application is secure.
+                  </Box>
+                </Box>
+              </Container>
+
+              {/* Security Stats */}
+              <Container header={<Header variant="h2">Security Stats</Header>}>
+                <Box textAlign="center">
+                  <PieChart
+                    data={securityStatsData}
+                    size="medium"
+                    hideFilter
+                    hideLegend
+                    innerMetricDescription="Total"
+                    innerMetricValue="7"
+                  />
+                  <Box margin={{ top: "s" }}>
+                    <ColumnLayout columns={2} variant="text-grid">
+                      <div>
+                        <Box variant="awsui-key-label">Prompt Injection: 0.0%</Box>
+                        <Box variant="awsui-key-label">Jailbreak Attempts: 0.0%</Box>
+                      </div>
+                      <div>
+                        <Box variant="awsui-key-label">Malware: 0.0%</Box>
+                        <Box variant="awsui-key-label">Network Anomaly: 0.0%</Box>
+                      </div>
+                    </ColumnLayout>
+                  </Box>
+                </Box>
+              </Container>
+
+              {/* Guardrail Categories */}
+              <Container header={<Header variant="h2">Guardrail Categories</Header>}>
+                <Box textAlign="center">
+                  <PieChart
+                    data={guardrailCategoriesData}
+                    size="medium"
+                    hideFilter
+                    hideLegend
+                    innerMetricDescription="Total"
+                    innerMetricValue="8"
+                  />
+                </Box>
+              </Container>
+            </Grid>
+
+            {/* Bedrock Statistics */}
+            <BedrockLogStats logs={logs} />
+
+            {/* Bottom Grid */}
+            <Grid
+              gridDefinition={[
+                { colspan: { default: 12, m: 6 } },
+                { colspan: { default: 12, m: 6 } }
+              ]}
+            >
+              {/* Recent Chat */}
+              <Container header={<Header variant="h2">Recent Chat</Header>}>
+                <SpaceBetween size="s">
+                  {chatMessages.slice(0, 6).map((message, index) => (
+                    <Box
+                      key={message.id || index}
+                      padding="s"
+                      backgroundColor={message.role === 'user' ? 'background-container-content' : 'background-container-header'}
+                    >
+                      <Box fontSize="body-s" color="text-label">
+                        {message.role === 'user' ? 'User: ' : 'Assistant: '}{message.content}
+                      </Box>
+                      <Box fontSize="body-s" color="text-status-inactive">
+                        {new Date(message.timestamp).toLocaleTimeString()}
+                      </Box>
+                    </Box>
+                  ))}
+                  {chatMessages.length === 0 && (
+                    <Box textAlign="center" color="text-status-inactive">
+                      No recent chat messages
+                    </Box>
+                  )}
+                </SpaceBetween>
+              </Container>
+
+              {/* Security Events */}
+              <Container header={<Header variant="h2">Security Events</Header>}>
+                <Table
+                  columnDefinitions={[
+                    {
+                      id: "threatType",
+                      header: "Threat Type",
+                      cell: item => item.threatType
+                    },
+                    {
+                      id: "detail",
+                      header: "Detail",
+                      cell: item => item.detail
+                    },
+                    {
+                      id: "priority",
+                      header: "Priority",
+                      cell: item => item.priority
+                    },
+                    {
+                      id: "username",
+                      header: "Username",
+                      cell: item => item.username
+                    },
+                    {
+                      id: "risk",
+                      header: "Risk",
+                      cell: item => <Badge color={item.risk === 'Low' ? 'green' : 'red'}>{item.risk}</Badge>
+                    }
+                  ]}
+                  items={securityEvents.slice(0, 10)}
+                  variant="embedded"
+                  empty={
+                    <Box textAlign="center" color="inherit">
+                      <b>No security events</b>
+                      <Box padding={{ bottom: "s" }} variant="p" color="inherit">
+                        No security events to display.
+                      </Box>
+                    </Box>
+                  }
+                />
+              </Container>
+            </Grid>
+          </SpaceBetween>
+        }
+      />
+    </div>
   );
 };
 
