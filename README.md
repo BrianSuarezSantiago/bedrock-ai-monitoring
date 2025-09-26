@@ -32,3 +32,6 @@ CloudWatch Log Group: /aws/bedrock/aimonitoring
 API Gateway: bedrockLogBroadcast
 
 DynamoDB table: bedrockLogsConnectionID
+
+https://eu-west-1.signin.aws/platform/d-9367a53821/login?workflowStateHandle=582c6190-8268-4212-8f4a-a36b26c31e7e
+
